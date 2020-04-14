@@ -1,10 +1,13 @@
-## Welcome to GitHub Pages
+## “Persepsi Masyarakat di Sekitar Lokasi Simpul Transportasi Dalam Rangka Optimalisasi Perencanaan Transportasi (co: Pembatasan Transportasi Umum dikala Social Distancing)”
 
-You can use the [editor on GitHub](https://github.com/auliamuthia/wordcloudanalysis/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+Raden Akmal Fauzi 	15146026
+Alfira Azzahra 	15416066
+Rizka Fitria T.	15416080
+Aulia Muthia	15416101
+Dellaneira Syifaa	15416102
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
-### Markdown
+### Background
 
 Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
 
