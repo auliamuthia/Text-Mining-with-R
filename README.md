@@ -1,10 +1,10 @@
-## “Persepsi Masyarakat di Sekitar Lokasi Simpul Transportasi Dalam Rangka Optimalisasi Perencanaan Transportasi (co: Pembatasan Transportasi Umum dikala Social Distancing)”
+## “Persepsi Masyarakat Terkait Pembatasan Transportasi Dalam Rangka Optimalisasi Perencanaan Transportasi (co: Pembatasan Transportasi Umum dikala Social Distancing)”
 
-Raden Akmal Fauzi 	15146026
-Alfira Azzahra 	15416066
-Rizka Fitria T.	15416080
-Aulia Muthia	15416101
-Dellaneira Syifaa	15416102
+#Raden Akmal Fauzi 	15146026
+#Alfira Azzahra 	15416066
+#Rizka Fitria T.	15416080
+#Aulia Muthia	15416101
+#Dellaneira Syifaa	15416102
 
 
 ### Background
