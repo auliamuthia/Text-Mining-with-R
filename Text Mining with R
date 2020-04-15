@@ -1,0 +1,202 @@
+#################################################################################################
+# Twitter text data mining and analyses                                                         #
+# SAPPK - Institut Teknologi Bandung                                                            #
+#                                                                                               #
+# Script names  : Text Mining with R                                                            #
+# Purpose       : This scripts contains lines of commands and function analyze an Indonesian    #
+#                 issues from Twitter using a simple Text Mining - Social Media Analytics       #
+#                 with R                                                                        #
+# Programmer    : Aulia Muthia                                                                  #
+# Acknowledgm't : This script was prepared based on various sources that are available online   #
+#                 Full credits to Adenantera Dwicaksono                                         #
+#                                                                                               #
+#################################################################################################
+
+
+################################################################################################# 
+#
+# Requirements:
+#   -  Set your working directory in your local folder
+#   -  Twitter's API consumer and access token keys
+#   -  The following packages need to be installed : twitteR, tm, wordcloud, plyr, stringr, tidytext, 
+#      tidyverse, stopwords.
+#   -  A .txt file containing Indonesia's stop words need to be downloaded from xxx and stored 
+#      to the working directory
+#   -  Two .csv files containing positive and negative words need to be downloaded from xxx and
+#      stored in the working directory 
+#
+################################################################################################# 
+
+
+#################################################################################################
+#
+# This script performs the following steps:
+#   Step 1: Step 1: Install packages, load required library packages, and set working directories
+#   Step 2: Establish access to Twitter API
+#   Step 3: Retrieving tweets
+#   Step 4: Cleaning tweets
+#   Step 5: Analyzing tweets - patterns and frequency of words (Wordcloud Analysis)
+#   Step 6: Analyzing tweets - sentiments 
+#   This script only includes step 1, 3, 4, 5, and 6. 
+################################################################################################# 
+
+
+
+#Step 1: Read Library & Data
+library(tidytext)
+library(textclean)
+library(wordcloud)
+library(tidyr)
+library(dplyr)
+library(stringr)
+library(tidyverse)
+library(stopwords)
+library(readxl)
+
+###############################################################
+
+##################
+#Step 3: Retrieving tweets
+##################
+
+#The search operator include any keyword that represent Transportation condition in DKI Jakarta, 
+#Such as: 1. @DishubDKI_JKT
+#         2. @PT_Transjakarta
+#         3. @keretaapikita
+#         4. @CommuterLine
+#         5. @KAI121
+#         6. @mrtjakarta
+#         7. @lrtjkt
+#         8. @bptj151
+#         9. @CurhatKRL
+#         10. @InfoKRL
+#         11.@ComLineJKT
+#         and other words that related to transportation in Jakarta, such as:
+#         12. "ojol", "gojek", "angkot", "angkutan umum", "ojek", "permenhub"
+
+setup_twitter_oauth(consumer_key ="",
+                    consumer_secret = "",
+                    access_token = "",
+                    access_secret = "")
+transportasidata <- searchTwitteR("keywords",
+                                  n=50000,
+                                  since='2020-04-06',
+                                  until='2020-04-14',
+                                  retryOnRateLimit =1)
+transportasidata <- twListToDF(transportasidata)
+
+##################
+#Step 4: Text Cleaning
+##################
+
+#1. Convert transportasidata to vector from dataframe
+transportasidatatext <- as.vector(transportasidata$transportasidata,mode="any")
+is.vector(transportasidatatext)
+
+head(transportasidatatext)
+
+transportasidatatext %>% 
+  str_to_lower() %>% # a function from stringr package to convert characters to lowercase 
+  replace_contraction() %>% # replace contraction with both words
+  replace_word_elongation() %>% # replace word elongation with shortened form
+  strip() %>% #remove all non words character
+  head(30)
+
+##################
+#Step 5: Analyzing tweets - patterns and frequency of words (Wordcloud Analysis)
+##################
+
+#Tokenize & Remove Stoprwords
+
+#We will build our list of stop words that are suitable for indonesian tweets
+#we will use the list of stopword developed by ...
+stopwordsbahasa <- read_excel('C:/Users/Aulia Muthia/Downloads/SEMESTER 8/SIP/stopwords/stopwords.xlsx',
+                              col_names = TRUE)
+
+transportasidatawords <- enframe(transportasidatatext,value = "transportasidata", name = NULL) %>% 
+                        #to convert dataframe to vector
+                        unnest_tokens(transportasidata,transportasidata) %>% 
+                        #tokenization to transform all the words from text to one data
+                        count(transportasidata,sort=TRUE) %>% 
+                        anti_join(stopwordsbahasa,by = c("transportasidata"="stopwords")) #remove stopwords
+                        #stopwords are words that do not have any additional meaning to the core concept words
+
+head(transportasidatawords,10)
+
+#Create Wordcloud with wordcloud package in R
+
+transportasidatawords%>% #recall the data that we will used
+  with(
+    wordcloud(
+      words = transportasidata, #column within our data that we want to visualize
+      freq = n, #column within our data that contains frequency of words
+      max.words = 125, #count of words limit that we want to visualize in wordcloud 
+      random.order = FALSE, #to visualize the data based on the frequency
+      colors = brewer.pal (name = "Dark2", 50) #color palette
+    )
+  )
+
+##################
+# Step 6: Analyzing tweets - sentiments and polarizations
+##################
+
+# load and scan the words into R
+pos.words <- scan("C:/Users/Aulia Muthia/Downloads/positive.csv", what = 'character')
+neg.words <- scan("C:/Users/Aulia Muthia/Downloads/negative.csv", what = 'character')
+
+# Create a function for sentiment analysis
+sentiment.score = function(sentences, pos.words, neg.words, .progress = 'none')
+{
+  # we got a vector of sentences. plyr will handle a list
+  # or a vector as an "l" for us
+  # we want a simple array ("a") of scores back, so we use 
+  # "l" + "a" + "ply" = "laply":
+  
+  scores = laply(sentences, function(sentence, pos.words, neg.words) {
+    
+    # clean up sentences with R's regex-driven global substitute, gsub():
+    sentence = gsub('[[:punct:]]', '', sentence)
+    sentence = gsub('[[:cntrl:]]', '', sentence)
+    sentence = gsub('\\d+', '', sentence)
+    # and convert to lower case:
+    sentence = tolower(sentence)
+    
+    # split into words. str_split is in the stringr package
+    word.list = str_split(sentence, '\\s+')
+    # sometimes a list() is one level of hierarchy too much
+    words = unlist(word.list)
+    
+    # compare our words to the dictionaries of positive & negative terms
+    pos.matches = match(words, pos.words)
+    neg.matches = match(words, neg.words)
+    
+    # match() returns the position of the matched term or NA
+    # we just want a TRUE/FALSE:
+    pos.matches = !is.na(pos.matches)
+    neg.matches = !is.na(neg.matches)
+    
+    # and conveniently enough, TRUE/FALSE will be treated as 1/0 by sum():
+    score = sum(pos.matches) - sum(neg.matches)
+    
+    return(score)
+  }, pos.words, neg.words, .progress=.progress )
+  
+  scores.transportasidata = data.frame(score=scores, text=sentences)
+  return(scores.transportasidata)
+}
+
+#Apply sentiments function to the tweets
+result <- sentiment.score(transportasidata$transportasidata,pos.words,neg.words)
+
+# View the summary of the results 
+summary(result$score)
+hist(result$score, col = "yellow", main = 'Score of tweets', ylab = 'Count of tweets')
+
+count(result$score)
+
+qplot(result$score,xlab = "Score of tweets")
+
+write.csv(result, 'C:/Users/Aulia Muthia/Downloads/SEMESTER 8/SIP/Data/Acc Transportasi/scoringtransport.csv',row.names = FALSE)
+
+
+
